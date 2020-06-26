@@ -46,7 +46,7 @@ inputSetOfFiles=$inputDir/*.root
 
 sumEntries=0
 filesToMerge=""
-ic=1
+ic=0
 for inputFile in $inputSetOfFiles; do
     currentEntries=$(root -l -b -q ${inputFile} -e 'CLASEVENT->GetEntries()' | awk 'END{print $NF}')
     ((sumEntries+=currentEntries))
@@ -55,6 +55,7 @@ for inputFile in $inputSetOfFiles; do
     else
 	rn=$(get_num "$ic")
 	outFile="$inputDir/merged_${rn}.root"
+	echo "hadd $outFile $filesToMerge"
 	hadd $outFile $filesToMerge
 	# reset values to start from *this* file
 	filesToMerge="$inputFile"
@@ -66,6 +67,7 @@ done
 # after loop: merge remaining files
 rn=$(get_num "$ic")
 outFile="$inputDir/merged_${rn}.root"
+echo "hadd $outFile $filesToMerge"
 hadd $outFile $filesToMerge
 
 #####
@@ -77,9 +79,9 @@ hadd $outFile $filesToMerge
 #
 # -> I run ./hmerge --M 800 .
 #
-# sum=0, filestomerge="", ic=1
+# sum=0, filestomerge="", ic=0
 # it 1: current=410, sum=410, cond 1 -> filestomerge="01"
-# it 2: current=400, sum=810, cond 2 -> hadd merged_01.root 01.root -> filestomerge="02", sum=400, ic=2
+# it 2: current=400, sum=810, cond 2 -> hadd merged_00.root 01.root -> filestomerge="02", sum=400, ic=1
 # it 3: current=400, sum=800, cond 1 -> filestomerge="02 03"
-# it 4: current=400, sum=1200, cond 2 -> hadd merged_02.root 02.root 03.root -> filestomerge="04", sum=400, ic=3 -> loop ends
-# after loop: hadd merged_03.root 04.root
+# it 4: current=400, sum=1200, cond 2 -> hadd merged_01.root 02.root 03.root -> filestomerge="04", sum=400, ic=2 -> loop ends
+# after loop: hadd merged_02.root 04.root
